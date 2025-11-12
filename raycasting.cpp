@@ -22,25 +22,17 @@ constexpr int SCREEN_HEIGHT = 900;
 constexpr int TILE_SIZE = 100;
 constexpr float MINIMAP_SCALE = 0.2f;
 constexpr int TRIANGLE_SIZE = 25 * MINIMAP_SCALE;
+constexpr int NUM_RAYS = SCREEN_WIDTH;
 
 typedef struct MapCoords {
     int x;
     int y;
 } MapCoords;
 
-typedef struct Position {
-    float x;
-    float y;
-
-    MapCoords getMapCoords() const {
-        return { static_cast<int>(x / TILE_SIZE), static_cast<int>(y / TILE_SIZE) };
-    }
-} Position;
-
 constexpr float SPEED = 0.01f;
 constexpr float ROTATION_SPEED = 0.001f;
 typedef struct Player {
-    Position position;
+    Vector2 position;
     float angle;
 
     void move_forwards(float speed) {
@@ -54,7 +46,11 @@ typedef struct Player {
     }
 } Player;
 
-Vector2 RotatePoint(Vector2 point, Position center, float angle) {
+MapCoords getMapCoords(Player player) {
+    return { static_cast<int>(player.position.x / TILE_SIZE), static_cast<int>(player.position.y / TILE_SIZE) };
+}
+
+Vector2 RotatePoint(Vector2 point, Vector2 center, float angle) {
     float x = point.x - center.x;
     float y = point.y - center.y;
     float rotated_x = x * cosf(angle) - y * sinf(angle);
@@ -64,12 +60,17 @@ Vector2 RotatePoint(Vector2 point, Position center, float angle) {
 
 int main() {
     constexpr float RIGHT_FACING_ANGLE = 0.f;
-    Player player = { Position { TILE_SIZE * (NUM_COLS / 2.f), TILE_SIZE * (NUM_ROWS / 2.f) }, RIGHT_FACING_ANGLE };
+    Player player = { Vector2 { TILE_SIZE * (NUM_COLS / 2.f), TILE_SIZE * (NUM_ROWS / 2.f) }, RIGHT_FACING_ANGLE };
 
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Raycasting");
     while (!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground(SKYBLUE);
+
+        // // Draw rays
+        // for (int i = 0; i < NUM_RAYS; i++) {
+
+        // }
 
         // Draw minimap
         for (int i = 0; i < NUM_ROWS; i++) {
@@ -86,7 +87,7 @@ int main() {
         }
 
         // Draw player in minimap
-        const Position triangle_position = { player.position.x * MINIMAP_SCALE, player.position.y * MINIMAP_SCALE };
+        const Vector2 triangle_position = { player.position.x * MINIMAP_SCALE, player.position.y * MINIMAP_SCALE };
         DrawTriangle(
             RotatePoint(Vector2 { triangle_position.x + TRIANGLE_SIZE, triangle_position.y }, triangle_position, player.angle),
             RotatePoint(Vector2 { triangle_position.x - TRIANGLE_SIZE, triangle_position.y - TRIANGLE_SIZE }, triangle_position, player.angle),
